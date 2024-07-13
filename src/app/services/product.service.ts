@@ -1,14 +1,14 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { BaseService } from './base-service';
-import { IGame } from '../interfaces';
+import { IProduct } from '../interfaces';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
 })
-export class GameService extends BaseService<IGame>{
-  protected override source: string = 'games';
-  private itemListSignal = signal<IGame[]>([]);
+export class ProductService extends BaseService<IProduct>{
+  protected override source: string = 'products';
+  private itemListSignal = signal<IProduct[]>([]);
   private snackBar = inject(MatSnackBar);
   
   get items$() {
@@ -27,11 +27,16 @@ export class GameService extends BaseService<IGame>{
     });
   }
 
-  public save(item: IGame) {
-    item.status = 'active';
+  public save(item: IProduct) {
+    item = {
+      ...item,
+      category: {
+        id: Number(item.category)
+      }
+    }
     this.add(item).subscribe({
       next: (response: any) => {
-        this.itemListSignal.update((games: IGame[]) => [response, ...games]);
+        this.itemListSignal.update((products: IProduct[]) => [response, ...products]);
       },
       error: (error : any) => {
         this.snackBar.open(error.error.description, 'Close', {
@@ -40,15 +45,20 @@ export class GameService extends BaseService<IGame>{
           panelClass: ['error-snackbar']
         });
         console.error('error', error);
-        console.error('error', error);
       }
     })
   } 
 
-  public update(item: IGame) {
+  public update(item: IProduct) {
+    item = {
+      ...item,
+      category: {
+        id: Number(item.category)
+      }
+    }
     this.edit(item.id, item).subscribe({
       next: () => {
-        const updatedItems = this.itemListSignal().map(game => game.id === item.id ? item : game);
+        const updatedItems = this.itemListSignal().map(product => product.id === item.id ? item : product);
         this.itemListSignal.set(updatedItems);
       },
       error: (error : any) => {
@@ -58,15 +68,14 @@ export class GameService extends BaseService<IGame>{
           panelClass: ['error-snackbar']
         });
         console.error('error', error);
-        console.error('error', error);
       }
     })
   }
 
-  public delete(game: IGame) {
-    this.del(game.id).subscribe({
+  public delete(product: IProduct) {
+    this.del(product.id).subscribe({
       next: () => {
-        const updatedItems = this.itemListSignal().filter((g: IGame) => g.id != game.id);
+        const updatedItems = this.itemListSignal().filter((g: IProduct) => g.id != product.id);
         this.itemListSignal.set(updatedItems);
       },
       error: (error : any) => {

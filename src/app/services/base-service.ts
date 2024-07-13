@@ -6,6 +6,7 @@ import { Injectable, inject } from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
+
 export class BaseService<T> {
   protected source!: string;
   protected http = inject(HttpClient);
